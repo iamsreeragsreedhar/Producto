@@ -1,6 +1,6 @@
 part of 'product_bloc.dart';
 
-enum type { none, productlist, refresh, offline, productdetails }
+enum type { none, productlist, refresh, offline, productdetails, search }
 
 enum LoadingStatus { none, loading, success, error }
 

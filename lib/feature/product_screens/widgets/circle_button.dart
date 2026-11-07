@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
 class CircleButton extends StatelessWidget {
-  const CircleButton({required this.icon, this.onTap});
+  final Color color;
+  const CircleButton({required this.icon, this.onTap, this.color = Colors.white});
   final IconData icon;
   final VoidCallback? onTap;
   @override
   Widget build(BuildContext context) => Material(
-    color: Colors.white,
+    color: color,
     shape: const CircleBorder(),
     child: InkWell(
       customBorder: const CircleBorder(),

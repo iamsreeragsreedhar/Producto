@@ -83,11 +83,11 @@ class _ProductListingState extends State<ProductListing> {
                                 ],
                               ),
                               const Spacer(),
-                              IconButton(
-                                onPressed: () {},
-                                icon: const Icon(Icons.notifications_none_rounded),
-                                style: IconButton.styleFrom(backgroundColor: Colors.white),
-                              ),
+                              // IconButton(
+                              //   onPressed: () {},
+                              //   icon: const Icon(Icons.notifications_none_rounded),
+                              //   style: IconButton.styleFrom(backgroundColor: Colors.white),
+                              // ),
                             ],
                           ),
                           28.height,
@@ -102,7 +102,9 @@ class _ProductListingState extends State<ProductListing> {
                           ),
                           18.height,
                           TextField(
-                            onChanged: (value) {},
+                            onChanged: (value) {
+                              context.read<ProductBloc>().add(ProductEvent.productsearched(value));
+                            },
                             decoration: InputDecoration(
                               hintText: 'Search products',
                               prefixIcon: const Icon(Icons.search_rounded),

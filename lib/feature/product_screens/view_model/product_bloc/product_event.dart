@@ -5,4 +5,5 @@ class ProductEvent with _$ProductEvent {
   const factory ProductEvent.productLoaded() = ProductLoaded;
   const factory ProductEvent.productRefreshed() = ProductRefreshed;
   const factory ProductEvent.productDetailsfetched(int id) = ProductDetailsfetched;
+  const factory ProductEvent.productsearched(String query) = ProductSearched;
 }

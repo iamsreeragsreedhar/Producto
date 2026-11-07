@@ -17,6 +17,7 @@ class ProductDetails extends StatefulWidget {
 
 class _ProductDetailsState extends State<ProductDetails> {
   int _selectedImage = 0;
+  bool clicked = false;
   @override
   void initState() {
     context.read<ProductBloc>().add(ProductEvent.productDetailsfetched(widget.id));
@@ -65,7 +66,15 @@ class _ProductDetailsState extends State<ProductDetails> {
                                 ),
                               ),
                               const Spacer(),
-                              const CircleButton(icon: Icons.favorite_border_rounded),
+                              CircleButton(
+                                color: clicked ? Colors.red : Colors.white,
+                                icon: Icons.favorite_border_rounded,
+                                onTap: () {
+                                  setState(() {
+                                    clicked = !clicked;
+                                  });
+                                },
+                              ),
                             ],
                           ),
                         ),
@@ -147,7 +156,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                                   letterSpacing: 1.2,
                                 ),
                               ),
-                          8.height,
+                              8.height,
                               Text(
                                 state.product?.title ?? '',
                                 style: const TextStyle(
@@ -157,7 +166,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                                   letterSpacing: -.5,
                                 ),
                               ),
-                             10.height,
+                              10.height,
                               Row(
                                 children: [
                                   const Icon(

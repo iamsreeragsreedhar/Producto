@@ -20,6 +20,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     : super(ProductState()) {
     on<ProductLoaded>(productListing);
     on<ProductDetailsfetched>(fetchProductDetails);
+    on<ProductSearched>(searchProducts);
   }
 
   Future<void> productListing(ProductLoaded event, Emitter<ProductState> emit) async {
@@ -140,6 +141,55 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           ),
         );
       }
+    }
+  }
+
+  Future<void> searchProducts(ProductSearched event, Emitter<ProductState> emit) async {
+    emit(state.copyWith(loadingStatus: LoadingStatus.loading, msg: ''));
+
+    try {
+      final isConnected = await service.isConnected();
+      if (isConnected) {
+        final response = await client.get(endpoint: '/products');
+        final products = (response.data['products'] as List<dynamic>)
+            .map((json) => Product.fromJson(json))
+            .toList();
+
+        final filteredProducts = products
+            .where((product) => product.title.toLowerCase().contains(event.query.toLowerCase()))
+            .toList();
+
+        emit(
+          state.copyWith(
+            loadingStatus: LoadingStatus.success,
+            authtype: type.search,
+            products: filteredProducts,
+          ),
+        );
+      } else {
+        final cachedProducts = await localstorage.getProducts();
+        final filteredProducts = cachedProducts
+            .where((product) => product.title.toLowerCase().contains(event.query.toLowerCase()))
+            .toList();
+
+        emit(
+          state.copyWith(
+            loadingStatus: LoadingStatus.success,
+            authtype: type.search,
+            products: filteredProducts,
+            msg: 'No internet connection. Showing cached data.',
+            isOffline: true,
+          ),
+        );
+      }
+    } catch (e) {
+      emit(
+        state.copyWith(
+          loadingStatus: LoadingStatus.error,
+          msg: 'Unable to search products. Please try again.',
+          authtype: type.search,
+        ),
+      );
     }
   }
 }
