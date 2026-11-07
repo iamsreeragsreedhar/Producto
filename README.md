@@ -1,16 +1,127 @@
-# flutter_application_1
+# Producto
 
-A new Flutter project.
+Producto is a Flutter product catalogue app. It retrieves catalogue and product-detail data from the DummyJSON API (`https://dummyjson.com`), displays listing and detail screens, and uses locally cached catalogue data as an offline fallback.
 
-## Getting Started
+## Requirements
 
-This project is a starting point for a Flutter application.
+- Flutter SDK with Dart 3.3 or newer (the Dart constraint is declared in `pubspec.yaml`).
+- Android Studio with an Android SDK/emulator, or Xcode on macOS for iOS builds.
+- Internet access for the first API fetch. Tests do not require internet access.
 
-A few resources to get you started if this is your first Flutter project:
+Check your installation:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+```bash
+flutter doctor
+flutter --version
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Setup
+
+1. Clone or copy this repository and open the project root (the directory containing `pubspec.yaml`).
+2. This source delivery contains the Dart application source and tests. If your checkout does not already contain platform folders, generate Android and web runners once from the project root:
+
+   ```bash
+   flutter create --platforms=android,web --project-name flutter_application_1 .
+   ```
+
+   On macOS, add `ios` to `--platforms` if you also need an iOS runner.
+3. Install packages:
+
+   ```bash
+   flutter pub get
+   ```
+
+4. Generate Freezed code only if you modify the annotated BLoC event/state declarations:
+
+   ```bash
+   dart run build_runner build --delete-conflicting-outputs
+   ```
+
+5. List available devices and run the app:
+
+   ```bash
+   flutter devices
+   flutter run
+   ```
+
+The app's API base URL is `https://dummyjson.com`, configured in `lib/core/repository/api_routes.dart`. No API key or secret is required. Product data is fetched from the API; the catalogue is not hardcoded in the app.
+
+## Tests
+
+Tests use `bloc_test` and `mocktail` to mock the API client, connectivity service and local storage. They do not call DummyJSON or depend on live network availability.
+
+Run the full test suite:
+
+```bash
+flutter test
+```
+
+Run only the product BLoC tests:
+
+```bash
+flutter test test/feature/product_screens/bloc/product_bloc_test.dart
+```
+
+The tests cover:
+
+- Online product listing and caching the API response.
+- Offline product listing from cache.
+- API failure with cached-data fallback.
+- Offline listing when no cached data exists.
+- Online product details.
+- Offline product details from cache.
+- Missing product details in the offline cache.
+
+## Architecture overview
+
+The project uses a feature-oriented structure with shared infrastructure under `lib/core/`.
+
+```text
+lib/
+├── core/
+│   ├── di/                 # GetIt dependency registration
+│   ├── network_service/    # Connectivity and SharedPreferences cache
+│   ├── repository/         # API base URL and Dio HTTP client
+│   ├── routes/             # GoRouter routes
+│   └── widgets/            # Shared UI helpers
+├── feature/
+│   └── product_screens/
+│       ├── model/          # Product model and JSON parsing
+│       ├── view/           # Listing and details screens
+│       ├── view_model/     # Product BLoC, events and states
+│       └── widgets/        # Product cards and loading placeholders
+├── main.dart
+└── splash_screen.dart
+
+test/
+├── feature/product_screens/bloc/ # Isolated BLoC tests
+└── helpers/                      # Reusable API/product fixtures
+```
+
+### Data flow
+
+1. A screen dispatches a typed event to `ProductBloc`.
+2. `NetworkService` checks the available network interfaces.
+3. When online, `DioClient` requests the product data from DummyJSON and the model parses the JSON response.
+4. A successful listing response is saved through `ProductLocalStorage` using SharedPreferences.
+5. When offline, or if an API request fails, the BLoC attempts to load cached products and emits an appropriate success or error state.
+6. The listing and details widgets render from the emitted BLoC state.
+
+`connectivity_plus` reports network-interface status; it cannot guarantee that the internet or remote API is reachable. API failures are therefore handled separately and can fall back to cache.
+
+## Screenshots
+
+Capture these from a running app on an emulator or physical device and save them at the following paths:
+
+- `screenshots/product-listing.png`
+- `screenshots/product-details.png`
+
+For example, launch the app with `flutter run`, capture the catalogue screen, tap a product, and capture the details screen. Do not use generated placeholders as application screenshots.
+
+## Git hygiene
+
+The repository `.gitignore` excludes Flutter/Dart build output, local IDE files, Android signing files and environment secrets. Do not commit signing keys, `.env` files, `android/local.properties`, or generated build directories. The checked-in `product_bloc.freezed.dart` is source code generated by Freezed and is required by the current BLoC implementation; it is not a build artifact.
+
+## Notes on verification
+
+Run `flutter pub get`, `flutter analyze`, and `flutter test` on a machine with the Flutter SDK before merging. This delivery environment does not have Flutter/Dart installed, so a successful local build and test run could not be independently confirmed here.
